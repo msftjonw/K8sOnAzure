@@ -39,3 +39,4 @@ az deployment group create \
 ```
 
 ## Option 2: Create Azure VMs with "Deploy to Azure" button
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsftjonw%2FCreateK8SFromScratch%2Fmain%2Ftemplate-k8s.json)
