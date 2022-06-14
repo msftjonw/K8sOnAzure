@@ -30,12 +30,13 @@ az group create -l westus3 -n RG-K8S
 ```
 
 ## Option 1: Create Azure VMs with pre-built ARM templates
+Replace the parameter file in the command to deploy all master nodes and worker nodes. Actually, there is only differences in the name.
 ```
 az deployment group create \
   --name <deployment group name> \
   --resource-group <resource group name> \
-  --template-uri "" \
-  --parameters ""
+  --template-uri "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/template-k8s.json" \
+  --parameters "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/parameters-k8smaster1.json"
 ```
 
 ## Option 2: Create Azure VMs with "Deploy to Azure" button
