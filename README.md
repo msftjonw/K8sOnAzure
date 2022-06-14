@@ -40,5 +40,6 @@ az deployment group create \
 ```
 
 ## Option 2: Create Azure VMs with "Deploy to Azure" button
-After clicking on the button "Deploy to Azure", login to the Azure subscription and click on "edit parameters" on the top middle. Load different parameter files to deploy all master nodes and worker nodes. Actually, there is only name difference.
+After clicking on the button "Deploy to Azure", login to the Azure subscription and click on "edit parameters" on the top middle. <br/>
+Load different parameter files to deploy all master nodes and worker nodes. Actually, there is only name difference. <br/>
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsftjonw%2FCreateK8SFromScratch%2Fmain%2Ftemplate-k8s.json)
