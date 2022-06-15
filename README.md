@@ -31,7 +31,7 @@ az group create -l westus3 -n RG-K8S
 ## Create Azure VMs
 ### Option 1: Create Azure VMs with pre-built ARM templates
 ```
-export vmname=("k8smaster1" "k8smaster1" "k8sworker1" "k8sworker2" "k8sworker3")
+export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
 for ((i=0; i<${#vmname[@]}; i++)); do \
 az deployment group create \
   --name deployment-${vmname[i]} \
@@ -64,4 +64,13 @@ az network nsg create -g <resource group name> -n NSG-K8S
 az network nsg rule create -g <resource group name> --nsg-name NSG-K8S -n Allow_SSH_2222 --priority 1000 \
     --destination-address-prefixes '*' --destination-port-ranges 2222 --access Allow \
     --protocol Tcp --description "Allow any IP to access port 2222."
+```
+
+## Set VMs' public IP to static and create a DNS name
+```
+export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
+export vmpiplist=($(az network public-ip list -g RG-K8S --query [].name -o tsv))
+for ((i=0; i<${#vmpiplist[@]}; i++)); do \
+az network public-ip update -g <resource group name> -n ${vmpiplist[i]} --dns-name ${vmname[i]} --allocation-method static ; \
+done
 ```
