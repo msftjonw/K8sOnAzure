@@ -22,12 +22,10 @@ az account set -s <subscription ID or subscription name>
 
 ## Create a resource group
 ```
-az group create -l <location> -n <resource group name>
+export rgname="RG-K8S"
+az group create -l <location> -n ${rgname}
 ```
-For example:
-```
-az group create -l westus3 -n RG-K8S
-```
+
 ## Create Azure VMs
 ### Option 1: Create Azure VMs with pre-built ARM templates
 ```
@@ -35,7 +33,7 @@ export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
 for ((i=0; i<${#vmname[@]}; i++)); do \
 az deployment group create \
   --name deployment-${vmname[i]} \
-  --resource-group <resource group name> \
+  --resource-group ${rgname} \
   --template-uri "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/template-k8s.json" \
   --parameters "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/parameters-${vmname[i]}.json"; \
 done
@@ -50,20 +48,29 @@ done
 
 ## Execute RunCommand in each Azure Linux VM to allow port 2222 for SSH
 ```
-export vmlist=($(az vm list -g <resource group name> --query [].name -o tsv))
+export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmlist[@]}; i++)); do \
 az vm run-command invoke -g <resource group name> -n ${vmlist[i]} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config'; \
 done
 ```
 
-## Create a network security group and an an inbound security rule
+## Create a network security group and an an inbound security rule. 
 ```
-az network nsg create -g <resource group name> -n NSG-K8S
+export nsgname="NSG-K8S"
+az network nsg create -g ${rgname} -n ${nsgname}
 ```
 ```
-az network nsg rule create -g <resource group name> --nsg-name NSG-K8S -n Allow_SSH_2222 --priority 1000 \
+az network nsg rule create -g ${rgname} --nsg-name NSG-K8S -n Allow_SSH_2222 --priority 1000 \
     --destination-address-prefixes '*' --destination-port-ranges 2222 --access Allow \
     --protocol Tcp --description "Allow any IP to access port 2222."
+```
+
+##Associate the NSG with the virtual network/subnet.
+```
+vnetname=$(az network vnet list -g ${rgname} --query [].name -o tsv)
+subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query [].name -o tsv)
+az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} --network-security-grou
+p ${nsgname}
 ```
 
 ## Set VMs' public IP to static and create a DNS name
