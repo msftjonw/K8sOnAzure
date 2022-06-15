@@ -23,7 +23,8 @@ az account set -s <subscription ID or subscription name>
 ## Create a resource group
 ```
 export rgname="RG-K8S"
-az group create -l <location> -n ${rgname}
+export location="westus3"
+az group create -l ${location} -n ${rgname}
 ```
 
 ## Create Azure VMs
