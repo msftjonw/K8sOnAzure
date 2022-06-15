@@ -131,7 +131,7 @@ ssh k8sadmin@k8smaster1.${location}.cloudapp.azure.com -p 2222
 ```
 ```
 sudo apt-get install -y jq
-export workerlist=($(kubectl get nodes -o json | jq '.items[].metadata.name' | grep worker))
+export workerlist=($(kubectl get nodes -o json | jq '.items[].metadata.name' | grep worker | tr -d '"'))
 for ((i=0; i<${#workerlist[@]}; i++)); do \
 kubectl label node ${workerlist[i]} node-role.kubernetes.io/worker=worker; \
 done
