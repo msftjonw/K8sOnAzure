@@ -51,7 +51,7 @@ done
 ```
 export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmlist[@]}; i++)); do \
-az vm run-command invoke -g <resource group name> -n ${vmlist[i]} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config'; \
+az vm run-command invoke -g ${rgname} -n ${vmlist[i]} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config'; \
 done
 ```
 
@@ -61,7 +61,7 @@ export nsgname="NSG-K8S"
 az network nsg create -g ${rgname} -n ${nsgname}
 ```
 ```
-az network nsg rule create -g ${rgname} --nsg-name NSG-K8S -n Allow_SSH_2222 --priority 1000 \
+az network nsg rule create -g ${rgname} --nsg-name ${nsgname} -n Allow_SSH_2222 --priority 1000 \
     --destination-address-prefixes '*' --destination-port-ranges 2222 --access Allow \
     --protocol Tcp --description "Allow any IP to access port 2222."
 ```
@@ -77,7 +77,7 @@ p ${nsgname}
 ## Set VMs' public IP to static and create a DNS name
 ```
 export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
-export vmpiplist=($(az network public-ip list -g RG-K8S --query [].name -o tsv))
+export vmpiplist=($(az network public-ip list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmpiplist[@]}; i++)); do \
 az network public-ip update -g <resource group name> -n ${vmpiplist[i]} --dns-name ${vmname[i]} --allocation-method static; \
 done
