@@ -51,7 +51,7 @@ done
 ```
 export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmlist[@]}; i++)); do \
-az vm run-command invoke -g ${rgname} -n ${vmlist[i]} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config'; \
+az vm run-command invoke -g ${rgname} -n ${vmlist[i]} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config' 'systemctl restart sshd;'; \
 done
 ```
 
@@ -89,7 +89,7 @@ done
 ```
 export workerlist=("K8S-Master1" "K8S-Master2" "K8S-Worker1" "K8S-Worker2" "K8S-Worker3")
 for ((i=0; i<${#workerlist[@]}; i++)); do \
-az vm run-command invoke -g ${rgname} -n ${workerlist[i]} --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh'; \
+az vm run-command invoke -g ${rgname} -n ${workerlist[i]} --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh' 'sudo chmod +x ~/installK8sRequiredComponents.sh' 'sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh' '~/installK8sRequiredComponents.sh'; \
 done
 ```
 
