@@ -80,14 +80,14 @@ export dnsname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3"
 export vmpiplist=($(az network public-ip list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmpiplist[@]}; i++)); do \
     for ((j=0; j<${#dnsname[@]}; j++)); do \
-        az network public-ip update -g <resource group name> -n ${vmpiplist[i]} --dns-name ${vmname[j]} --allocation-method static; \
+        az network public-ip update -g ${rgname} -n ${vmpiplist[i]} --dns-name ${dnsname[j]} --allocation-method static; \
     done \
 done
 ```
 
 ## Install all K8s required components in all Azure VMs
 ```
-export workerlist=("K8S-Master1" "K8S-Worker1" "K8S-Worker2" "K8S-Worker3")
+export workerlist=("K8S-Master1" "K8S-Master2" "K8S-Worker1" "K8S-Worker2" "K8S-Worker3")
 for ((i=0; i<${#workerlist[@]}; i++)); do \
 az vm run-command invoke -g ${rgname} -n ${workerlist[i]} --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh'; \
 done
