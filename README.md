@@ -65,7 +65,7 @@ az network nsg rule create -g ${rgname} --nsg-name NSG-K8S -n Allow_SSH_2222 --p
     --protocol Tcp --description "Allow any IP to access port 2222."
 ```
 
-##Associate the NSG with the virtual network/subnet.
+## Associate the NSG with the virtual network/subnet.
 ```
 vnetname=$(az network vnet list -g ${rgname} --query [].name -o tsv)
 subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query [].name -o tsv)
@@ -80,4 +80,15 @@ export vmpiplist=($(az network public-ip list -g RG-K8S --query [].name -o tsv))
 for ((i=0; i<${#vmpiplist[@]}; i++)); do \
 az network public-ip update -g <resource group name> -n ${vmpiplist[i]} --dns-name ${vmname[i]} --allocation-method static ; \
 done
+```
+
+## Install all K8s required components in all Azure VMs
+```
+
+```
+
+
+## Initialize a K8s cluster from the master node
+```
+az vm run-command invoke -g ${rgname} -n K8S-Master1 --command-id RunShellScript --scripts ''
 ```
