@@ -36,8 +36,8 @@ sudo apt-get -y update && sudo apt install -y gnupg2 software-properties-common 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
 sudo apt update && sudo apt install containerd.io -y >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
-sudo su - && mkdir -p /etc/containerd >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
-containerd config default>/etc/containerd/config.toml && exit >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
+sudo mkdir -p /etc/containerd >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
+#containerd config default>/etc/containerd/config.toml && exit >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
 sudo systemctl restart containerd && sudo systemctl enable containerd >> /var/log/k8s_install_output.txt 2>> /var/log/k8s_install_errors.txt
 
 #Install kubeadm kubelet and kubectl
