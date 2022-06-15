@@ -76,10 +76,12 @@ p ${nsgname}
 
 ## Set VMs' public IP to static and create a DNS name
 ```
-export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
+export dnsname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
 export vmpiplist=($(az network public-ip list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmpiplist[@]}; i++)); do \
-az network public-ip update -g <resource group name> -n ${vmpiplist[i]} --dns-name ${vmname[i]} --allocation-method static; \
+    for ((j=0; j<${#dnsname[@]}; j++)); do \
+        az network public-ip update -g <resource group name> -n ${vmpiplist[i]} --dns-name ${vmname[j]} --allocation-method static; \
+    done \
 done
 ```
 
