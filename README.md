@@ -149,9 +149,9 @@ kubectl label node ${workerlist[i]} node-role.kubernetes.io/worker=worker; \
 done
 ```
 
-===
+---
 
-##Since all Azure VMs will auto shutdown at 6PM PST. The script below will start all Azure VMs at once.
+## Since all Azure VMs will auto shutdown at 6PM PST. The script below will start all Azure VMs at once.
 ```
 export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmlist[@]}; i++)); do \
