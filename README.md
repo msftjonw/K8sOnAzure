@@ -76,7 +76,7 @@ p ${nsgname}
 
 ## Set VMs' public IP to static and create a DNS name
 ```
-export dnsname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
+export dnsname=($(az vm list -g ${rgname} --query [].name -o tsv | tr '[:upper:]' '[:lower:]'))
 export vmpiplist=($(az network public-ip list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmpiplist[@]}; i++)); do \
     for ((j=0; j<${#dnsname[@]}; j++)); do \
