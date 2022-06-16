@@ -87,9 +87,9 @@ done
 
 ## Install all K8s required components in all Azure VMs
 ```
-export workerlist=("K8S-Master1" "K8S-Master2" "K8S-Worker1" "K8S-Worker2" "K8S-Worker3")
-for ((i=0; i<${#workerlist[@]}; i++)); do \
-az vm run-command invoke -g ${rgname} -n ${workerlist[i]} --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh' 'sudo chmod +x ~/installK8sRequiredComponents.sh' 'sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh' '~/installK8sRequiredComponents.sh'; \
+export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
+for ((i=0; i<${#vmlist[@]}; i++)); do \
+az vm run-command invoke -g ${rgname} -n ${vmlist[i]} --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh' 'sudo chmod +x ~/installK8sRequiredComponents.sh' 'sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh' '~/installK8sRequiredComponents.sh'; \
 done
 ```
 
@@ -113,6 +113,7 @@ Download the initialize shell script and execute it.
 ```
 curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/initializeK8SMasterNode.sh -o ~/initializeK8SMasterNode.sh
 sudo chmod +x installK8SMasterNode.sh
+sed -i -e 's/\r$//' ~/installK8SMasterNode.sh
 sudo ./installK8SMasterNode.sh
 ```
 Install Weave CNI to have all pods communicate across node.
@@ -126,6 +127,7 @@ kubeadm token create --print-join-command
 Exit from the master node. <br/>
 
 ## Join worker nodes to the initialized K8s cluster
+Replace the 'kubeadm join ...' command with the one you get from the K8s master node.
 ```
 export workerlist=("K8S-Worker1" "K8S-Worker2" "K8S-Worker3")
 for ((i=0; i<${#workerlist[@]}; i++)); do \
@@ -144,5 +146,15 @@ sudo apt-get install -y jq
 export workerlist=($(kubectl get nodes -o json | jq '.items[].metadata.name' | grep worker | tr -d '"'))
 for ((i=0; i<${#workerlist[@]}; i++)); do \
 kubectl label node ${workerlist[i]} node-role.kubernetes.io/worker=worker; \
+done
+```
+
+===
+
+##Since all Azure VMs will auto shutdown at 6PM PST. The script below will start all Azure VMs at once.
+```
+export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
+for ((i=0; i<${#vmlist[@]}; i++)); do \
+az vm start -g ${rgname} -n ${vmlist[i]}; \
 done
 ```
