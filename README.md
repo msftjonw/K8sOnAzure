@@ -1,6 +1,4 @@
-This Git repository is a technical guide for creating a Kubernetes cluster with Azure VMs.
-
-# Create Azure VM with ARM template <br/>
+#This Git repository is a technical guide for creating a Kubernetes cluster with Azure VMs.
 
 ## Install Azure CLI in the local machine
 https://docs.microsoft.com/en-us/cli/azure/install-azure-cli#install
