@@ -1,4 +1,4 @@
-This Git repository is a technical guide for creating a Kubernetes cluster on Azure VMs.
+This Git repository is a technical guide for creating a Kubernetes cluster with Azure VMs.
 
 # Create Azure VM with ARM template <br/>
 
@@ -10,7 +10,7 @@ https://docs.microsoft.com/en-us/cli/azure/install-azure-cli#install
 git clone 
 ```
 
-## Login to Azure
+## Login to Azure with an user or AAD service principal with Azure RBAC Contributor permissions.
 ```
 az login --use-device-code
 ```
