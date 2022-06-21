@@ -151,8 +151,10 @@ done
 
 ## Since all Azure VMs will auto shutdown at 6PM PST. The script below will start all Azure VMs at once.
 ```
+export rgname="RG-K8S"
 export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
 for ((i=0; i<${#vmlist[@]}; i++)); do \
-az vm start -g ${rgname} -n ${vmlist[i]}; \
+    echo "Powering on ${vmlist[i]}."; \
+    az vm start -g ${rgname} -n ${vmlist[i]}; \
 done
 ```
