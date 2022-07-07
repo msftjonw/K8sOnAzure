@@ -112,7 +112,9 @@ ssh k8sadmin@k8smaster1.${location}.cloudapp.azure.com -p 2222
 Download the initialize shell script and execute it.
 ```
 curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/initializeK8SMasterNode.sh -o ~/initializeK8SMasterNode.sh
-sudo chmod +x installK8SMasterNode.sh
+sudo chmod +x initializeK8SMasterNode.sh
+```
+```
 sed -i -e 's/\r$//' ~/installK8SMasterNode.sh
 sudo ./installK8SMasterNode.sh
 ```
