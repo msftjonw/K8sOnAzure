@@ -104,6 +104,15 @@ sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh
 ./installK8sRequiredComponents.sh
 ```
 
+Check whether all required components are installed without issues.
+SSH into each node and execute
+```
+cat /var/log/k8s_install_output.txt
+```
+```
+cat /var/log/k8s_install_errors.txt
+```
+
 ## Initialize a K8s cluster from the master node
 SSH into the master node.
 ```
@@ -118,6 +127,15 @@ sudo chmod +x initializeK8SMasterNode.sh
 sed -i -e 's/\r$//' ~/initializeK8SMasterNode.sh
 sudo ./initializeK8SMasterNode.sh
 ```
+
+Check whether K8S is initialized without issues.
+```
+cat /var/log/k8s_init_output.txt
+```
+```
+cat /var/log/k8s_init_errors.txt
+```
+
 Install Weave CNI to have all pods communicate across node.
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
