@@ -99,7 +99,7 @@ ssh <dnsname>@k8smaster1.${location}.cloudapp.azure.com -p 2222
 curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh
 sudo chmod +x ~/installK8sRequiredComponents.sh
 sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh
-~/installK8sRequiredComponents.sh
+./installK8sRequiredComponents.sh
 ```
 
 ## Initialize a K8s cluster from the master node
