@@ -68,8 +68,8 @@ az network nsg rule create -g ${rgname} --nsg-name ${nsgname} -n Allow_SSH_2222 
 ```
 vnetname=$(az network vnet list -g ${rgname} --query [].name -o tsv)
 subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query [].name -o tsv)
-az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} --network-security-grou
-p ${nsgname}
+az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} \
+    --network-security-group ${nsgname}
 ```
 
 ## Set VMs' public IP to static and create a DNS name
