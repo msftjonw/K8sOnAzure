@@ -115,8 +115,8 @@ curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/ini
 sudo chmod +x initializeK8SMasterNode.sh
 ```
 ```
-sed -i -e 's/\r$//' ~/installK8SMasterNode.sh
-sudo ./installK8SMasterNode.sh
+sed -i -e 's/\r$//' ~/initializeK8SMasterNode.sh
+sudo ./initializeK8SMasterNode.sh
 ```
 Install Weave CNI to have all pods communicate across node.
 ```
