@@ -23,22 +23,26 @@ az account set -s <subscription ID or subscription name>
 export rgname="RG-K8S" #pick any name
 export location="westus3" #pick any Azure location
 export cni="Flannel" #pick any cni, weavenet, flannel, calico
-export vnetname=VNet-${cni}
-export subnetname=Subnet-${cni}
-export elbname=ELB-${cni}
-export elbfename=ELB-${cni}
-export elbbename=ELBBP-${cni}
+
+export vnetname="VNet-${cni}"
+export subnetname="Subnet-${cni}"
+
+export elbpipname="PIP1-ELB-${cni}"
+export elbname="ELB-${cni}"
+export elbfename="ELBFE-${cni}"
+export elbbpname="ELBBP-${cni}"
+
+export mastervmname="Master1-${cni}"
+export workervmname="Worker1-${cni}"
+
+export adminusername="jonw"
+export adminpassword="zaq1@WSXcde3"
+export nsgname="NSG-${cni}"
 ```
 
 ## Create a resource group
 ```
 az group create -l ${location} -n ${rgname}
-```
-
-## Create a standard and static public IP address
-```
-export elbpipname=PIP1-ELB-${cni}
-az network public-ip create -g ${rgname} -n ${elbpipname} --allocation-method Static --sku Standard --tier Regional
 ```
 
 ## Create a virtual network and a subnet
@@ -48,45 +52,40 @@ az network vnet create -g ${rgname} -n ${vnetname} --address-prefixes 172.16.0.0
 
 ## Create a standard public load balancer
 ```
-az network lb create -g ${rgname} -n ${elbname} --sku Standard --frontend-ip-name ${elbfename} --public-ip-address-allocation Static --backend-poo
-l-name ${elbbename} --vnet-name ${vnetname} --subnet ${subnetname}
+az network lb create -g ${rgname} -n ELB-${cni} --sku Standard --backend-pool-name ${elbbpname} --frontend-ip-name ${elbfename} --public-ip-address ${elbpipname}
 ```
 
-vnetname=$(az network vnet list -g ${rgname} --query "[].name" -o tsv)
-subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query "[].name" -o tsv)
+## Create servers
 ```
-
-## Create Azure VMs
-### Option 1: Create Azure VMs with pre-built ARM templates
-```
-export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
-for ((i=0; i<${#vmname[@]}; i++)); do \
-az deployment group create \
-  --name deployment-${vmname[i]} \
-  --resource-group ${rgname} \
-  --template-uri "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/template-k8s.json" \
-  --parameters "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/parameters-${vmname[i]}.json"; \
+vmname=(${mastervmname} ${workervmname})
+for vm in "${vmname[@]}"; do \
+az vm create -g ${rgname} -n $vm --admin-username ${adminusername} \
+--admin-password ${adminpassword} --image Canonical:UbuntuServer:18.04-LTS:latest \
+--public-ip-address PIP1-$vm --public-ip-address-allocation static --public-ip-sku Standard \
+--vnet-name ${vnetname} --subnet ${subnetname} --nsg ""; \
 done
 ```
 
-### Option 2: Create Azure VMs with "Deploy to Azure" button
-1. Click "Deploy to Azure"
-2. Login to the Azure subscription
-3. Click on "edit parameters" on the top middle.
-4. Click on "load files". Select all downloaded parameters JSON file one by one to create master and worker nodes. <br/><br/>
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsftjonw%2FCreateK8SFromScratch%2Fmain%2Ftemplate-k8s.json)
+## Associate servers to LB backend pool
+```
+vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
+for vm in "${vmname[@]}"; do \
+az network nic ip-config address-pool add --address-pool ${elbbpname} \
+--ip-config-name ipconfig$vm --nic-name $vmVMNic -g ${rgname} --lb-name ${elbname}; \
+done
+```
+
 
 ## Execute RunCommand in each Azure Linux VM to allow port 2222 for SSH
 ```
-export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
-for ((i=0; i<${#vmlist[@]}; i++)); do \
-az vm run-command invoke -g ${rgname} -n ${vmlist[i]} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config' 'systemctl restart sshd;'; \
+vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
+for vm in "${vmname[@]}"; do \
+az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config' 'systemctl restart sshd;'; \
 done
 ```
 
-## Create a network security group and an an inbound security rule. 
+## Create a network security group and an inbound security rule. 
 ```
-export nsgname="NSG-K8S"
 az network nsg create -g ${rgname} -n ${nsgname}
 ```
 ```
@@ -97,21 +96,7 @@ az network nsg rule create -g ${rgname} --nsg-name ${nsgname} -n Allow_SSH_2222 
 
 ## Associate the NSG with the virtual network/subnet.
 ```
-vnetname=$(az network vnet list -g ${rgname} --query [].name -o tsv)
-subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query [].name -o tsv)
-az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} \
-    --network-security-group ${nsgname}
-```
-
-## Set VMs' public IP to static and create a DNS name
-```
-export dnsname=($(az vm list -g ${rgname} --query [].name -o tsv | tr '[:upper:]' '[:lower:]'))
-export vmpiplist=($(az network public-ip list -g ${rgname} --query [].name -o tsv))
-for ((i=0; i<${#vmpiplist[@]}; i++)); do \
-    for ((j=0; j<${#dnsname[@]}; j++)); do \
-        az network public-ip update -g ${rgname} -n ${vmpiplist[i]} --dns-name ${dnsname[j]} --allocation-method static; \
-    done \
-done
+az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} --network-security-group ${nsgname}
 ```
 
 ## Install all K8s required components in all Azure VMs
@@ -211,3 +196,25 @@ for ((i=0; i<${#vmlist[@]}; i++)); do \
     az vm start -g ${rgname} -n ${vmlist[i]}; \
 done
 ```
+
+===
+
+## Create Azure VMs
+### Option 1: Create Azure VMs with pre-built ARM templates
+```
+export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
+for ((i=0; i<${#vmname[@]}; i++)); do \
+az deployment group create \
+  --name deployment-${vmname[i]} \
+  --resource-group ${rgname} \
+  --template-uri "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/template-k8s.json" \
+  --parameters "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/parameters-${vmname[i]}.json"; \
+done
+```
+
+### Option 2: Create Azure VMs with "Deploy to Azure" button
+1. Click "Deploy to Azure"
+2. Login to the Azure subscription
+3. Click on "edit parameters" on the top middle.
+4. Click on "load files". Select all downloaded parameters JSON file one by one to create master and worker nodes. <br/><br/>
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsftjonw%2FCreateK8SFromScratch%2Fmain%2Ftemplate-k8s.json)
