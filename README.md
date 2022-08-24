@@ -18,27 +18,40 @@ az login --use-device-code
 az account set -s <subscription ID or subscription name>
 ```
 
-## Create a resource group
+## Create variables
 ```
 export rgname="RG-K8S" #pick any name
 export location="westus3" #pick any Azure location
-az group create -l ${location} -n ${rgname}
 export cni="Flannel" #pick any cni, weavenet, flannel, calico
+export vnetname=VNet-${cni}
+export subnetname=Subnet-${cni}
+export elbname=ELB-${cni}
+export elbfename=ELB-${cni}
+export elbbename=ELBBP-${cni}
+```
+
+## Create a resource group
+```
+az group create -l ${location} -n ${rgname}
 ```
 
 ## Create a standard and static public IP address
 ```
-az network public-ip create -g ${rgname} -n PIP1-ELB-${cni} --allocation-method Static --sku Standard --tier Regional
+export elbpipname=PIP1-ELB-${cni}
+az network public-ip create -g ${rgname} -n ${elbpipname} --allocation-method Static --sku Standard --tier Regional
 ```
 
 ## Create a virtual network and a subnet
 ```
-az network vnet create -g ${rgname} -n VNet-${cni} --address-prefixes 172.16.0.0/16 --subnet-name Subnet1-${cni} --subnet-prefixes 172.16.1.0/24
+az network vnet create -g ${rgname} -n ${vnetname} --address-prefixes 172.16.0.0/16 --subnet-name ${subnetname} --subnet-prefixes 172.16.1.0/24
 ```
 
 ## Create a standard public load balancer
 ```
-elbpipname=$(az network public-ip list -g ${rgname} --query "[].name" -o tsv)
+az network lb create -g ${rgname} -n ${elbname} --sku Standard --frontend-ip-name ${elbfename} --public-ip-address-allocation Static --backend-poo
+l-name ${elbbename} --vnet-name ${vnetname} --subnet ${subnetname}
+```
+
 vnetname=$(az network vnet list -g ${rgname} --query "[].name" -o tsv)
 subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query "[].name" -o tsv)
 ```
