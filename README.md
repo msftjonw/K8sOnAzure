@@ -101,9 +101,9 @@ az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetna
 
 ## Install all K8s required components in all Azure VMs
 ```
-export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
-for ((i=0; i<${#vmlist[@]}; i++)); do \
-az vm run-command invoke -g ${rgname} -n ${vmlist[i]} --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh' 'sudo chmod +x ~/installK8sRequiredComponents.sh' 'sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh' '~/installK8sRequiredComponents.sh'; \
+vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
+for vm in "${vmname[@]}"; do \
+az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh' 'sudo chmod +x ~/installK8sRequiredComponents.sh' 'sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh' '~/installK8sRequiredComponents.sh'; \
 done
 ```
 
