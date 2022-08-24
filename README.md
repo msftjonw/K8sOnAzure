@@ -103,7 +103,7 @@ az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetna
 ```
 vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
-az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh' 'chmod +x $HOME/installK8sRequiredComponents.sh' 'apt-get install dos2unix ./installK8sRequiredComponents.sh' 'dos2unix ./installK8sRequiredComponents.sh' './installK8sRequiredComponents.sh'; \
+az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh' 'sudo chmod +x ./installK8sRequiredComponents.sh' 'sudo apt-get install dos2unix' 'sudo dos2unix ./installK8sRequiredComponents.sh' 'sudo ./installK8sRequiredComponents.sh'; \
 done
 ```
 
