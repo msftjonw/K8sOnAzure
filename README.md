@@ -20,9 +20,27 @@ az account set -s <subscription ID or subscription name>
 
 ## Create a resource group
 ```
-export rgname="RG-K8S"
+export rgname="RG-K8S" #pick any name
 export location="westus3" #pick any Azure location
 az group create -l ${location} -n ${rgname}
+export cni="Flannel" #pick any cni, weavenet, flannel, calico
+```
+
+## Create a standard and static public IP address
+```
+az network public-ip create -g ${rgname} -n PIP1-ELB-${cni} --allocation-method Static --sku Standard --tier Regional
+```
+
+## Create a virtual network and a subnet
+```
+az network vnet create -g ${rgname} -n VNet-${cni} --address-prefixes 172.16.0.0/16 --subnet-name Subnet1-${cni} --subnet-prefixes 172.16.1.0/24
+```
+
+## Create a standard public load balancer
+```
+elbpipname=$(az network public-ip list -g ${rgname} --query "[].name" -o tsv)
+vnetname=$(az network vnet list -g ${rgname} --query "[].name" -o tsv)
+subnetname=$(az network vnet subnet list -g ${rgname} --vnet-name ${vnetname} --query "[].name" -o tsv)
 ```
 
 ## Create Azure VMs
