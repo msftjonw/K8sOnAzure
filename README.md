@@ -61,7 +61,7 @@ vmname=(${mastervmname} ${workervmname})
 for vm in "${vmname[@]}"; do \
 az vm create -g ${rgname} -n $vm --admin-username ${adminusername} \
 --admin-password ${adminpassword} --image Canonical:UbuntuServer:18.04-LTS:latest \
---public-ip-address PIP1-$vm --public-ip-address-allocation static --public-ip-sku Standard \
+--public-ip-address PIP1-$vm --public-ip-address-dns-name ${vm,,} --public-ip-address-allocation static --public-ip-sku Standard \
 --vnet-name ${vnetname} --subnet ${subnetname} --nsg ""; \
 done
 ```
