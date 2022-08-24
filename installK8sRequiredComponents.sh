@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Delete the previous command output and error files
 sudo rm -rf /var/log/k8s_install_output.txt && sudo rm -rf /var/log/k8s_install_errors.txt
