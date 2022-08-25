@@ -142,14 +142,14 @@ Create an AAD service principal and grant it with Contributor permissions
 ```
 ```
 
-Modify cloud.conf to use the newly created AAD service principal and fill in all other required information <br/>
+Modify cloud.conf to use the newly created AAD service principal and fill in all other required information. <br/><br/>
 
 Download kubeadm.yaml to $HOME
 ```
 wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
 ```
 
-Initialize K8s cluster from the master node
+Initialize the K8s cluster
 ```
 sudo kubeadm init --config kubeadm.yaml
 mkdir -p $HOME/.kube
@@ -160,11 +160,11 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 ## Different CNI solutions
 
-Weave CNI
+# Weave CNI
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
-Calico CNI <br/><br/>
+# Calico CNI <br/><br/>
 https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
 Select "Manifest"
 ```
@@ -178,12 +178,15 @@ Install Calico CNI
 kubectl apply -f calico.yaml
 ```
 
+# Flannel
+
+
 ## Join worker node(s) to the K8s cluster
 Get the command to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
 ```
 kubeadm token create --print-join-command
 ```
-Exit from the master node and SSH into the worker node(s). <br/>
+Exit from the master node and SSH into the worker node(s) to execute the kubeadm join command. <br/>
 
 ---
 
