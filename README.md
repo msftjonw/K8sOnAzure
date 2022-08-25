@@ -194,8 +194,12 @@ kubectl apply -f calico.yaml
 ```
 
 ### Flannel
+#### Download the manifest file and modify the pod CIDR to be "10.11.0.0/16"
 ```
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+curl https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml -o $HOME/kube-flannel.yaml
+```
+```
+kubectl apply -f $HOME/kube-flannel.yaml
 ```
 
 ---
