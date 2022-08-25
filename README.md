@@ -99,6 +99,14 @@ az network nsg rule create -g ${rgname} --nsg-name ${nsgname} -n Allow_SSH_2222 
 az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} --network-security-group ${nsgname}
 ```
 
+## Enable server auto shutdown
+```
+vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
+for vm in "${vmname[@]}"; do \
+az vm auto-shutdown -g ${rgname} -n $vm --time 0200; \
+done
+```
+
 ## Install all K8s required components in all Azure VMs
 ```
 vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
