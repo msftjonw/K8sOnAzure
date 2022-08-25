@@ -8,6 +8,8 @@ https://docs.microsoft.com/en-us/cli/azure/install-azure-cli#install
 git clone 
 ```
 
+---
+
 ## Login to Azure with an user or AAD service principal with Azure RBAC Contributor permissions.
 ```
 az login --use-device-code
@@ -107,6 +109,8 @@ az vm auto-shutdown -g ${rgname} -n $vm --time 0200; \
 done
 ```
 
+---
+
 ## Install all K8s required components in all Azure VMs
 ```
 vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
@@ -119,6 +123,8 @@ vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
 az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo $HOME/installK8sRequiredComponents.sh'; done
 ```
+
+---
 
 ## Initialize a K8s cluster from the master node
 SSH into the master node
@@ -180,7 +186,7 @@ Install Calico CNI
 kubectl apply -f calico.yaml
 ```
 
-# Flannel
+### Flannel
 ```
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
