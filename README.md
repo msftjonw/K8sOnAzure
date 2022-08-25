@@ -120,28 +120,6 @@ for vm in "${vmname[@]}"; do \
 az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo $HOME/installK8sRequiredComponents.sh'; done
 ```
 
-If the above command executing from the client machine does not work, SSH into each node and execute the command in the following order
-```
-ssh <dnsname>@k8smaster1.${location}.cloudapp.azure.com -p 2222
-```
-```
-curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh
-sudo chmod +x ~/installK8sRequiredComponents.sh
-```
-```
-sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh
-./installK8sRequiredComponents.sh
-```
-
-Check whether all required components are installed without issues.
-SSH into each node and execute
-```
-cat /var/log/k8s_install_output.txt
-```
-```
-cat /var/log/k8s_install_errors.txt
-```
-
 ## Initialize a K8s cluster from the master node
 SSH into the master node
 ```
@@ -162,26 +140,39 @@ wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFrom
 
 Download kubeadm.yaml to $HOME
 ```
-wget -P $HOME 
+wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
 ```
 
 Initialize K8s cluster from the master node
 ```
-sudo kubeadm init --config xxxx
+sudo kubeadm init --config kubeadm.yaml
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-Check whether K8S is initialized without issues.
-```
-cat /var/log/k8s_init_output.txt
-```
-```
-cat /var/log/k8s_init_errors.txt
-```
 
-Install Weave CNI to have all pods communicate across node.
+## Different CNI solutions
+
+Weave CNI
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
+Calico CNI
+https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
+Select "Manifest"
+```
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.24.0/manifests/calico.yaml -O
+```
+
+If you are using pod CIDR 192.168.0.0/16, skip to the next step. If you are using a different pod CIDR with kubeadm, no changes are required - Calico will automatically detect the CIDR based on the running configuration. For other platforms, make sure you uncomment the CALICO_IPV4POOL_CIDR variable in the manifest and set it to the same value as your chosen pod CIDR.
+
+Install Calico CNI
+```
+kubectl apply -f calico.yaml
+```
+
+## Join worker node(s) to the K8s cluster
 Get the command to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
 ```
 kubeadm token create --print-join-command
@@ -221,6 +212,30 @@ for ((i=0; i<${#vmlist[@]}; i++)); do \
     echo "Powering on ${vmlist[i]}."; \
     az vm start -g ${rgname} -n ${vmlist[i]}; \
 done
+```
+
+===
+## Troubleshooting
+
+If the above command executing from the client machine does not work, SSH into each node and execute the command in the following order
+```
+ssh <dnsname>@k8smaster1.${location}.cloudapp.azure.com -p 2222
+```
+```
+curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -o ~/installK8sRequiredComponents.sh
+sudo chmod +x ~/installK8sRequiredComponents.sh
+```
+```
+sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh
+./installK8sRequiredComponents.sh
+```
+
+Check whether K8S is initialized without issues.
+```
+cat /var/log/k8s_init_output.txt
+```
+```
+cat /var/log/k8s_init_errors.txt
 ```
 
 ===
