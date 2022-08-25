@@ -158,7 +158,7 @@ sudo wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8
 ```
 wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
 ```
-### Get kubeadm version (kubeadm version) and modify kubeadm.yaml file with the installed K8s version.
+### Get kubeadm version (kubeadm version) and modify kubeadm.yaml file with it.
 
 ### Initialize the K8s cluster and note down the "kubeadm join" command.
 ```
