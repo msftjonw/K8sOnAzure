@@ -143,18 +143,21 @@ cat /var/log/k8s_install_errors.txt
 ```
 
 ## Initialize a K8s cluster from the master node
-SSH into the master node.
+SSH into the master node
 ```
-ssh k8sadmin@k8smaster1.${location}.cloudapp.azure.com -p 2222
+ssh k8sadmin@${mastervmname}.${location}.cloudapp.azure.com -p 2222
 ```
-Download the initialize shell script and execute it.
+
+Configure containerd and restart the service
 ```
-curl -L https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/initializeK8SMasterNode.sh -o ~/initializeK8SMasterNode.sh
-sudo chmod +x initializeK8SMasterNode.sh
+sudo su
+containerd config default>/etc/containerd/config.toml
+exit
 ```
+
+Initialize K8s cluster from the master node
 ```
-sed -i -e 's/\r$//' ~/initializeK8SMasterNode.sh
-sudo ./initializeK8SMasterNode.sh
+sudo kubeadm init --config xxxx
 ```
 
 Check whether K8S is initialized without issues.
