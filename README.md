@@ -137,7 +137,7 @@ az ad sp create-for-rbac -n SP-${cni}
 ```
 
 ## Initialize a K8s cluster from the master node
-### SSH into the master node(s). <br/><br/>
+### SSH into the master node(s)
 
 ### Configure containerd and restart the service
 ```
@@ -194,7 +194,7 @@ kubectl apply -f calico.yaml
 ```
 
 ### Flannel
-#### Download the manifest file and modify the pod CIDR to be "10.11.0.0/16"
+#### Download the manifest file and modify the pod CIDR (search "net-conf.json") to be "10.11.0.0/16"
 ```
 curl https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml -o $HOME/kube-flannel.yaml
 ```
@@ -205,7 +205,7 @@ kubectl apply -f $HOME/kube-flannel.yaml
 ---
 
 ## Join worker node(s) to the K8s cluster
-### SSH into worker node(s). <br/><br/>
+### SSH into the worker node(s)
 
 ### Configure containerd and restart the service
 ```
@@ -215,12 +215,12 @@ systemctl restart containerd
 exit
 ```
 
-### Exit from the master node and SSH into the worker node(s) to execute the kubeadm join command. <br/>
+### Exit from the master node and SSH into the worker node(s) to execute the kubeadm join command.
 
 ---
 
 ## Label the worker nodes
-SSH into the master node. <br/><br/>
+### SSH into the master node(s)
 ```
 sudo apt-get install -y jq
 export workerlist=($(kubectl get nodes -o json | jq '.items[].metadata.name' | grep worker | tr -d '"'))
