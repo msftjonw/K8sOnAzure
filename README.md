@@ -124,7 +124,7 @@ done
 ## Install all K8s required components in all Azure VMs
 ```
 for vm in "${vmname[@]}"; do \
-az vm run-command invoke -g ${rgname} -n ${vm} --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -P /home' 'sudo chmod +x /home/installK8sRequiredComponents.sh' 'sudo apt-get update && sudo apt-get install dos2unix && sudo dos2unix /home/installK8sRequiredComponents.sh' 'sudo systemctl start atd && sudo systemctl enable atd && sudo /home/installK8sRequiredComponents.sh | at now +5 minutes'; \
+az vm run-command invoke -g ${rgname} -n ${vm} --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/K8sOnAzure/main/installK8sRequiredComponents.sh -P /home' 'sudo chmod +x /home/installK8sRequiredComponents.sh' 'sudo apt-get update && sudo apt-get install dos2unix && sudo dos2unix /home/installK8sRequiredComponents.sh' 'sudo systemctl start atd && sudo systemctl enable atd && sudo /home/installK8sRequiredComponents.sh | at now +5 minutes'; \
 done
 ```
 
@@ -149,14 +149,14 @@ exit
 
 ### Download cloud.conf to /etc/kubernetes
 ```
-sudo wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
+sudo wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/K8sOnAzure/main/cloud.conf
 ```
 
 ### Modify cloud.conf to use the newly created AAD service principal, Azure subscription and fill in all other required information.
 
 ### Download kubeadm.yaml to $HOME
 ```
-wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
+wget -P $HOME https://raw.githubusercontent.com/msftjonw/K8sOnAzure/main/kubeadm.yaml
 ```
 ### Get kubeadm version (kubeadm version) and modify kubeadm.yaml file with it.
 
