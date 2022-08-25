@@ -84,7 +84,7 @@ az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scrip
 done
 ```
 
-## Create a network security group and an inbound security rule. 
+## Create a network security group and an inbound security rule
 ```
 az network nsg create -g ${rgname} -n ${nsgname}
 ```
@@ -94,7 +94,7 @@ az network nsg rule create -g ${rgname} --nsg-name ${nsgname} -n Allow_SSH_2222 
     --protocol Tcp --description "Allow any IP to access port 2222."
 ```
 
-## Associate the NSG with the virtual network/subnet.
+## Associate the NSG with the virtual network/subnet
 ```
 az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} --network-security-group ${nsgname}
 ```
@@ -103,7 +103,7 @@ az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetna
 ```
 vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
-az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -P $HOME' 'sudo chmod +x $HOME/installK8sRequiredComponents.sh' 'sudo apt-get install dos2unix' 'sudo dos2unix $HOME/installK8sRequiredComponents.sh' \
+az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -P $HOME' 'sudo chmod +x $HOME/installK8sRequiredComponents.sh' 'sudo apt-get install dos2unix' 'sudo dos2unix $HOME/installK8sRequiredComponents.sh' 'sudo apt-get -y install at' 'sudo systemctl start atd && sudo systemctl enable atd' 'sudo $HOME/installK8sRequiredComponents.sh | at now +5 minutes' \
 done
 ```
 ```
