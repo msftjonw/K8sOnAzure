@@ -26,6 +26,7 @@ export cni="Flannel" #pick any cni, weavenet, flannel, calico
 
 export vnetname="VNet-${cni}"
 export subnetname="Subnet-${cni}"
+export nsgname="NSG-${cni}"
 
 export elbpipname="PIP1-ELB-${cni}"
 export elbname="ELB-${cni}"
@@ -34,10 +35,9 @@ export elbbpname="ELBBP-${cni}"
 
 export mastervmname="Master1-${cni}"
 export workervmname="Worker1-${cni}"
-
 export adminusername="jonw"
 export adminpassword="zaq1@WSXcde3"
-export nsgname="NSG-${cni}"
+
 ```
 
 ## Create a resource group
