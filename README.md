@@ -157,7 +157,12 @@ exit
 
 Download cloud.conf to /etc/kubernetes
 ```
-wget -P /etc/kubernetes 
+wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
+```
+
+Download kubeadm.yaml to $HOME
+```
+wget -P $HOME 
 ```
 
 Initialize K8s cluster from the master node
