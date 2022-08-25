@@ -22,9 +22,10 @@ az account set -s <subscription ID or subscription name>
 
 ## Create variables
 ```
-export rgname="RG-K8S" #pick any name
-export location="westus3" #pick any Azure location
 export cni="Flannel" #pick any cni, weavenet, flannel, calico
+export rgname="RG-${cni}" #pick any name
+export location="westus3" #pick any Azure location
+
 
 export vnetname="VNet-${cni}"
 export subnetname="Subnet-${cni}"
@@ -35,8 +36,6 @@ export elbname="ELB-${cni}"
 export elbfename="ELBFE-${cni}"
 export elbbpname="ELBBP-${cni}"
 
-export mastervmname="Master1-${cni}"
-export workervmname="Worker1-${cni}"
 export adminusername="jonw"
 export adminpassword="zaq1@WSXcde3"
 
@@ -57,13 +56,26 @@ az network vnet create -g ${rgname} -n ${vnetname} --address-prefixes 172.16.0.0
 az network lb create -g ${rgname} -n ELB-${cni} --sku Standard --backend-pool-name ${elbbpname} --frontend-ip-name ${elbfename} --public-ip-address ${elbpipname}
 ```
 
-## Create servers
+## Create master node(s)
+Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 master nodes, change it to 3.
 ```
-vmname=(${mastervmname} ${workervmname})
-for vm in "${vmname[@]}"; do \
-az vm create -g ${rgname} -n $vm --admin-username ${adminusername} \
+for ((i=1; i<2; i++)); do \
+export vmname=Master${i}-${cni}
+az vm create -g ${rgname} -n ${vmname} --admin-username ${adminusername} --size Standard_D4S_v3 \
 --admin-password ${adminpassword} --image Canonical:UbuntuServer:18.04-LTS:latest \
---public-ip-address PIP1-$vm --public-ip-address-dns-name ${vm,,} --public-ip-address-allocation static --public-ip-sku Standard \
+--public-ip-address PIP1-${vmname} --public-ip-address-dns-name ${vmname,,} --public-ip-address-allocation static --public-ip-sku Standard \
+--vnet-name ${vnetname} --subnet ${subnetname} --nsg ""; \
+done
+```
+
+## Create worker node(s)
+Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 worker nodes, change it to 3.
+```
+for ((i=1; i<2; i++)); do \
+export vmname=Worker${i}-${cni}
+az vm create -g ${rgname} -n ${vmname} --admin-username ${adminusername} --size Standard_D4S_v3 \
+--admin-password ${adminpassword} --image Canonical:UbuntuServer:18.04-LTS:latest \
+--public-ip-address PIP1-${vmname} --public-ip-address-dns-name ${vmname,,} --public-ip-address-allocation static --public-ip-sku Standard \
 --vnet-name ${vnetname} --subnet ${subnetname} --nsg ""; \
 done
 ```
@@ -73,16 +85,15 @@ done
 vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
 az network nic ip-config address-pool add --address-pool ${elbbpname} \
---ip-config-name ipconfig$vm --nic-name $vmVMNic -g ${rgname} --lb-name ${elbname}; \
+--ip-config-name ipconfig${vm} --nic-name ${vm}VMNic -g ${rgname} --lb-name ${elbname}; \
 done
 ```
 
 
 ## Execute RunCommand in each Azure Linux VM to allow port 2222 for SSH
 ```
-vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
-az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config' 'systemctl restart sshd;'; \
+az vm run-command invoke -g ${rgname} -n ${vm} --command-id RunShellScript --scripts 'echo "Port 2222" >> /etc/ssh/sshd_config' 'systemctl restart sshd;'; \
 done
 ```
 
@@ -103,9 +114,8 @@ az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetna
 
 ## Enable server auto shutdown
 ```
-vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
-az vm auto-shutdown -g ${rgname} -n $vm --time 0200; \
+az vm auto-shutdown -g ${rgname} -n ${vm} --time 0200; \
 done
 ```
 
@@ -113,49 +123,46 @@ done
 
 ## Install all K8s required components in all Azure VMs
 ```
-vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
 for vm in "${vmname[@]}"; do \
-az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -P $HOME' 'sudo chmod +x $HOME/installK8sRequiredComponents.sh' 'sudo apt-get install dos2unix' 'sudo dos2unix $HOME/installK8sRequiredComponents.sh' 'sudo apt-get -y install at' 'sudo systemctl start atd && sudo systemctl enable atd' 'sudo $HOME/installK8sRequiredComponents.sh | at now +5 minutes' \
+az vm run-command invoke -g ${rgname} -n ${vm} --command-id RunShellScript --scripts 'sudo wget https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/installK8sRequiredComponents.sh -P /home' 'sudo chmod +x /home/installK8sRequiredComponents.sh' 'sudo apt-get update && sudo apt-get install dos2unix && sudo dos2unix /home/installK8sRequiredComponents.sh' 'sudo systemctl start atd && sudo systemctl enable atd && sudo /home/installK8sRequiredComponents.sh | at now +5 minutes'; \
 done
 ```
-```
-vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
-for vm in "${vmname[@]}"; do \
-az vm run-command invoke -g ${rgname} -n $vm --command-id RunShellScript --scripts 'sudo $HOME/installK8sRequiredComponents.sh'; done
-```
+
 
 ---
 
-## Initialize a K8s cluster from the master node
-SSH into the master node
-```
-ssh k8sadmin@${mastervmname}.${location}.cloudapp.azure.com -p 2222
-```
-
-Configure containerd and restart the service
-```
-sudo su
-containerd config default>/etc/containerd/config.toml
-exit
-```
-
-Download cloud.conf to /etc/kubernetes
-```
-wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
-```
-
-Create an AAD service principal and grant it with Contributor permissions <br/><br/>
+## Create an AAD service principal and grant it with Contributor permissions <br/><br/>
 Note down the tenant ID, appId and password
 ```
 az ad sp create-for-rbac -n SP-${cni}
 ```
 
-Modify cloud.conf to use the newly created AAD service principal and fill in all other required information. <br/><br/>
+## Initialize a K8s cluster from the master node
+SSH into the master node
+```
+ssh ${adminusername}@<mastervmname>.${location}.cloudapp.azure.com -p 2222
+```
+
+Configure containerd and restart the service
+```
+sudo su
+containerd config default> /etc/containerd/config.toml
+systemctl restart containerd
+exit
+```
+
+Download cloud.conf to /etc/kubernetes
+```
+sudo wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
+```
+
+Modify cloud.conf to use the newly created AAD service principal, Azure subscription and fill in all other required information. <br/><br/>
 
 Download kubeadm.yaml to $HOME
 ```
 wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
 ```
+Get kubeadm version and modify kubeadm.yaml file with the installed K8s version. <br/><br/>
 
 Initialize the K8s cluster
 ```
@@ -190,6 +197,8 @@ kubectl apply -f calico.yaml
 ```
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
+
+---
 
 ## Join worker node(s) to the K8s cluster
 Get the command to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
