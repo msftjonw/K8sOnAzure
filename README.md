@@ -138,15 +138,12 @@ az ad sp create-for-rbac -n SP-${cni}
 ```
 
 ## Initialize a K8s cluster from the master node
-SSH into the master node
-```
-ssh ${adminusername}@<mastervmname>.${location}.cloudapp.azure.com -p 2222
-```
+SSH into the master node(s). <br/><br/>
 
 Configure containerd and restart the service
 ```
 sudo su
-containerd config default> /etc/containerd/config.toml
+containerd config default > /etc/containerd/config.toml
 systemctl restart containerd
 exit
 ```
@@ -164,7 +161,7 @@ wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/ma
 ```
 Get kubeadm version and modify kubeadm.yaml file with the installed K8s version. <br/><br/>
 
-Initialize the K8s cluster
+Initialize the K8s cluster and note down the "kubeadm join" command.
 ```
 sudo kubeadm init --config kubeadm.yaml
 mkdir -p $HOME/.kube
@@ -201,6 +198,16 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 ---
 
 ## Join worker node(s) to the K8s cluster
+SSH into worker node(s). <br/><br/>
+
+Configure containerd and restart the service
+```
+sudo su
+containerd config default > /etc/containerd/config.toml
+systemctl restart containerd
+exit
+```
+
 Get the command to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
 ```
 kubeadm token create --print-join-command
@@ -210,10 +217,7 @@ Exit from the master node and SSH into the worker node(s) to execute the kubeadm
 ---
 
 ## Label the worker nodes
-SSH into the master node.
-```
-ssh k8sadmin@k8smaster1.${location}.cloudapp.azure.com -p 2222
-```
+SSH into the master node. <br/><br/>
 ```
 sudo apt-get install -y jq
 export workerlist=($(kubectl get nodes -o json | jq '.items[].metadata.name' | grep worker | tr -d '"'))
