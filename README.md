@@ -185,6 +185,7 @@ kubeadm token create --print-join-command
 ```
 Exit from the master node and SSH into the worker node(s). <br/>
 
+---
 
 ## Label the worker nodes
 SSH into the master node.
@@ -211,7 +212,8 @@ for ((i=0; i<${#vmlist[@]}; i++)); do \
 done
 ```
 
-===
+---
+
 ## Troubleshooting
 
 If the above command executing from the client machine does not work, SSH into each node and execute the command in the following order
@@ -235,7 +237,7 @@ cat /var/log/k8s_init_output.txt
 cat /var/log/k8s_init_errors.txt
 ```
 
-===
+---
 
 ## Create Azure VMs
 ### Option 1: Create Azure VMs with pre-built ARM templates
