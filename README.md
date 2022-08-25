@@ -138,8 +138,10 @@ Download cloud.conf to /etc/kubernetes
 wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
 ```
 
-Create an AAD service principal and grant it with Contributor permissions
+Create an AAD service principal and grant it with Contributor permissions <br/><br/>
+Note down the tenant ID, appId and password
 ```
+az ad sp create-for-rbac -n SP-${cni}
 ```
 
 Modify cloud.conf to use the newly created AAD service principal and fill in all other required information. <br/><br/>
@@ -160,11 +162,11 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 ## Different CNI solutions
 
-# Weave CNI
+### Weave CNI
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
-# Calico CNI <br/><br/>
+### Calico CNI <br/><br/>
 https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
 Select "Manifest"
 ```
