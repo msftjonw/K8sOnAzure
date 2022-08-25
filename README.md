@@ -138,6 +138,12 @@ Download cloud.conf to /etc/kubernetes
 wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
 ```
 
+Create an AAD service principal and grant it with Contributor permissions
+```
+```
+
+Modify cloud.conf to use the newly created AAD service principal and fill in all other required information <br/>
+
 Download kubeadm.yaml to $HOME
 ```
 wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
@@ -158,7 +164,7 @@ Weave CNI
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
-Calico CNI
+Calico CNI <br/><br/>
 https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
 Select "Manifest"
 ```
@@ -177,17 +183,8 @@ Get the command to join worker nodes to the initialized cluster. If forget to co
 ```
 kubeadm token create --print-join-command
 ```
-Exit from the master node. <br/>
+Exit from the master node and SSH into the worker node(s). <br/>
 
-## Join worker nodes to the initialized K8s cluster
-Replace the 'kubeadm join ...' command with the one you get from the K8s master node.
-```
-export workerlist=("K8S-Worker1" "K8S-Worker2" "K8S-Worker3")
-for ((i=0; i<${#workerlist[@]}; i++)); do \
-az vm run-command invoke -g ${rgname} -n ${workerlist[i]} --command-id RunShellScript --scripts 'sudo kubeadm join 10.0.0.4:6443 --token 3mazx9.oq4tqxy0xcor18km \
-        --discovery-token-ca-cert-hash sha256:b181b027e5c3d637dfe00fdad02b7417e0c0486de4093a18110fd5074045ce62'; \
-done
-```
 
 ## Label the worker nodes
 SSH into the master node.
