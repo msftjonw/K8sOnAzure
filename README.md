@@ -155,6 +155,11 @@ containerd config default>/etc/containerd/config.toml
 exit
 ```
 
+Download cloud.conf to /etc/kubernetes
+```
+wget -P /etc/kubernetes 
+```
+
 Initialize K8s cluster from the master node
 ```
 sudo kubeadm init --config xxxx
