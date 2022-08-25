@@ -57,7 +57,7 @@ az network lb create -g ${rgname} -n ELB-${cni} --sku Standard --backend-pool-na
 ```
 
 ## Create master node(s)
-Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 master nodes, change it to 3.
+### Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 master nodes, change it to 3.
 ```
 for ((i=1; i<2; i++)); do \
 export vmname=Master${i}-${cni}
@@ -69,7 +69,7 @@ done
 ```
 
 ## Create worker node(s)
-Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 worker nodes, change it to 3.
+### Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 worker nodes, change it to 3.
 ```
 for ((i=1; i<2; i++)); do \
 export vmname=Worker${i}-${cni}
@@ -128,19 +128,18 @@ az vm run-command invoke -g ${rgname} -n ${vm} --command-id RunShellScript --scr
 done
 ```
 
-
 ---
 
-## Create an AAD service principal and grant it with Contributor permissions <br/><br/>
-Note down the tenant ID, appId and password
+## Create an AAD service principal and grant it with Contributor permissions
+### Note down the tenant ID, appId and password
 ```
 az ad sp create-for-rbac -n SP-${cni}
 ```
 
 ## Initialize a K8s cluster from the master node
-SSH into the master node(s). <br/><br/>
+### SSH into the master node(s). <br/><br/>
 
-Configure containerd and restart the service
+### Configure containerd and restart the service
 ```
 sudo su
 containerd config default > /etc/containerd/config.toml
@@ -148,20 +147,20 @@ systemctl restart containerd
 exit
 ```
 
-Download cloud.conf to /etc/kubernetes
+### Download cloud.conf to /etc/kubernetes
 ```
 sudo wget -P /etc/kubernetes https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/cloud.conf
 ```
 
-Modify cloud.conf to use the newly created AAD service principal, Azure subscription and fill in all other required information. <br/><br/>
+### Modify cloud.conf to use the newly created AAD service principal, Azure subscription and fill in all other required information.
 
-Download kubeadm.yaml to $HOME
+### Download kubeadm.yaml to $HOME
 ```
 wget -P $HOME https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/kubeadm.yaml
 ```
-Get kubeadm version and modify kubeadm.yaml file with the installed K8s version. <br/><br/>
+### Get kubeadm version (kubeadm version) and modify kubeadm.yaml file with the installed K8s version.
 
-Initialize the K8s cluster and note down the "kubeadm join" command.
+### Initialize the K8s cluster and note down the "kubeadm join" command.
 ```
 sudo kubeadm init --config kubeadm.yaml
 mkdir -p $HOME/.kube
@@ -169,6 +168,10 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
+### Get the "kubeadm join" command again to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
+```
+kubeadm token create --print-join-command
+```
 
 ## Different CNI solutions
 
@@ -183,9 +186,9 @@ Select "Manifest"
 curl https://raw.githubusercontent.com/projectcalico/calico/v3.24.0/manifests/calico.yaml -O
 ```
 
-If you are using pod CIDR 192.168.0.0/16, skip to the next step. If you are using a different pod CIDR with kubeadm, no changes are required - Calico will automatically detect the CIDR based on the running configuration. For other platforms, make sure you uncomment the CALICO_IPV4POOL_CIDR variable in the manifest and set it to the same value as your chosen pod CIDR.
+#### If you are using pod CIDR 192.168.0.0/16, skip to the next step. If you are using a different pod CIDR with kubeadm, no changes are required - Calico will automatically detect the CIDR based on the running configuration. For other platforms, make sure you uncomment the CALICO_IPV4POOL_CIDR variable in the manifest and set it to the same value as your chosen pod CIDR.
 
-Install Calico CNI
+#### Install Calico CNI
 ```
 kubectl apply -f calico.yaml
 ```
@@ -198,9 +201,9 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 ---
 
 ## Join worker node(s) to the K8s cluster
-SSH into worker node(s). <br/><br/>
+### SSH into worker node(s). <br/><br/>
 
-Configure containerd and restart the service
+### Configure containerd and restart the service
 ```
 sudo su
 containerd config default > /etc/containerd/config.toml
@@ -208,11 +211,7 @@ systemctl restart containerd
 exit
 ```
 
-Get the command to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
-```
-kubeadm token create --print-join-command
-```
-Exit from the master node and SSH into the worker node(s) to execute the kubeadm join command. <br/>
+### Exit from the master node and SSH into the worker node(s) to execute the kubeadm join command. <br/>
 
 ---
 
@@ -242,7 +241,7 @@ done
 
 ## Troubleshooting
 
-If the above command executing from the client machine does not work, SSH into each node and execute the command in the following order
+### If the above command executing from the client machine does not work, SSH into each node and execute the command in the following order
 ```
 ssh <dnsname>@k8smaster1.${location}.cloudapp.azure.com -p 2222
 ```
@@ -255,32 +254,10 @@ sed -i -e 's/\r$//' ~/installK8sRequiredComponents.sh
 ./installK8sRequiredComponents.sh
 ```
 
-Check whether K8S is initialized without issues.
+### Check whether K8S is initialized without issues.
 ```
 cat /var/log/k8s_init_output.txt
 ```
 ```
 cat /var/log/k8s_init_errors.txt
 ```
-
----
-
-## Create Azure VMs
-### Option 1: Create Azure VMs with pre-built ARM templates
-```
-export vmname=("k8smaster1" "k8smaster2" "k8sworker1" "k8sworker2" "k8sworker3")
-for ((i=0; i<${#vmname[@]}; i++)); do \
-az deployment group create \
-  --name deployment-${vmname[i]} \
-  --resource-group ${rgname} \
-  --template-uri "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/template-k8s.json" \
-  --parameters "https://raw.githubusercontent.com/msftjonw/CreateK8SFromScratch/main/parameters-${vmname[i]}.json"; \
-done
-```
-
-### Option 2: Create Azure VMs with "Deploy to Azure" button
-1. Click "Deploy to Azure"
-2. Login to the Azure subscription
-3. Click on "edit parameters" on the top middle.
-4. Click on "load files". Select all downloaded parameters JSON file one by one to create master and worker nodes. <br/><br/>
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsftjonw%2FCreateK8SFromScratch%2Fmain%2Ftemplate-k8s.json)
