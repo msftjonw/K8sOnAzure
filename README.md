@@ -229,11 +229,11 @@ done
 
 ## Start all Azure VMs at once
 ```
-export rgname="RG-K8S"
-export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
-for ((i=0; i<${#vmlist[@]}; i++)); do \
-    echo "Powering on ${vmlist[i]}."; \
-    az vm start -g ${rgname} -n ${vmlist[i]}; \
+export rgname="xxxx" 
+vmname=($(az vm list -g ${rgname} --query [].name -o tsv))
+for vm in "${vmname[@]}"; do \
+    echo "Powering on ${vm}."; \
+    az vm start -g ${rgname} -n ${vm}; \
 done
 ```
 
