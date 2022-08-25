@@ -133,9 +133,7 @@ done
 ## Create an AAD service principal and grant it with Contributor permissions
 ### Note down the tenant ID, appId and password
 ```
-az ad sp create-for-rbac -n SP-${cni}
-aadspid=$(az ad sp list --display-name SP-${cni} --query "[].appId" -o tsv)
-az role assignment create --role Contributor --assignee ${aadspid}
+az ad sp create-for-rbac -n SP-${cni} --role Contributor
 ```
 
 ## Initialize a K8s cluster from the master node
