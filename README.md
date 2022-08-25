@@ -181,7 +181,9 @@ kubectl apply -f calico.yaml
 ```
 
 # Flannel
-
+```
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
 
 ## Join worker node(s) to the K8s cluster
 Get the command to join worker nodes to the initialized cluster. If forget to copy, execute the command below to get a new token and command.
@@ -207,7 +209,7 @@ done
 
 ---
 
-## Since all Azure VMs will auto shutdown at 6PM PST. The script below will start all Azure VMs at once.
+## Start all Azure VMs at once
 ```
 export rgname="RG-K8S"
 export vmlist=($(az vm list -g ${rgname} --query [].name -o tsv))
