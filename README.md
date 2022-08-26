@@ -57,9 +57,9 @@ az network lb create -g ${rgname} -n ELB-${cni} --sku Standard --backend-pool-na
 ```
 
 ## Create master node(s)
-### Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 master nodes, change it to 3.
+### Change the number after "i<" to the desired amount of nodes. For example, if you will need 2 master nodes, change it to 2.
 ```
-for ((i=1; i<2; i++)); do \
+for ((i=1; i<=1; i++)); do \
 export vmname=Master${i}-${cni}
 az vm create -g ${rgname} -n ${vmname} --admin-username ${adminusername} --size Standard_D4S_v3 \
 --admin-password ${adminpassword} --image Canonical:UbuntuServer:18.04-LTS:latest \
@@ -69,9 +69,9 @@ done
 ```
 
 ## Create worker node(s)
-### Change the number after "i<" to the desired amount of nodes +1. For example, if you will need 2 worker nodes, change it to 3.
+### Change the number after "i<" to the desired amount of nodes. For example, if you will need 2 master nodes, change it to 2.
 ```
-for ((i=1; i<2; i++)); do \
+for ((i=1; i<=1; i++)); do \
 export vmname=Worker${i}-${cni}
 az vm create -g ${rgname} -n ${vmname} --admin-username ${adminusername} --size Standard_D4S_v3 \
 --admin-password ${adminpassword} --image Canonical:UbuntuServer:18.04-LTS:latest \
