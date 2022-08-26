@@ -133,7 +133,8 @@ done
 ## Create an AAD service principal and grant it with Contributor permissions
 ### Note down the tenant ID, appId and password
 ```
-az ad sp create-for-rbac -n SP-${cni} --role Contributor
+subId=$(az account show --query "id" -o tsv)
+az ad sp create-for-rbac -n SP-${cni} --role Contributor --scope /subscriptions/${subId}
 ```
 
 ## Initialize a K8s cluster from the master node
