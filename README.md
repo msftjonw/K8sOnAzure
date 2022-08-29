@@ -105,8 +105,7 @@ az network nsg rule create -g ${rgname} --nsg-name ${nsgname} -n Allow_SSH_2222 
     --destination-address-prefixes '*' --destination-port-ranges 2222 --access Allow \
     --protocol Tcp --description "Allow any IP to access port 2222."
 ```
-
-## Associate the NSG with the virtual network/subnet
+### Associate the NSG with the virtual network/subnet
 ```
 az network vnet subnet update -g ${rgname} --vnet-name ${vnetname} -n ${subnetname} --network-security-group ${nsgname}
 ```
