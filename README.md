@@ -23,10 +23,9 @@ az account set -s <subscription ID or subscription name>
 ## Create variables
 ```
 export cni="Flannel" #pick any cni, weavenet, flannel, calico
-export rgname="RG-${cni}" #pick any name
 export location="westus3" #pick any Azure location
 
-
+export rgname="RG-${cni}" #pick any name
 export vnetname="VNet-${cni}"
 export subnetname="Subnet-${cni}"
 export nsgname="NSG-${cni}"
