@@ -173,6 +173,8 @@ kubeadm token create --print-join-command
 
 ## Different CNI solutions
 
+### Check kubeadm.yaml to see what has been set for Pod CIDR.
+
 ### Weave CNI
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
