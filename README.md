@@ -133,7 +133,7 @@ done
 ### Note down the tenant ID, appId and password
 ```
 subId=$(az account show --query "id" -o tsv)
-az ad sp create-for-rbac -n SP-${cni} --role Contributor --scope /subscriptions/${subId}
+az ad sp create-for-rbac -n SP-${cni} --role Contributor --scope /subscriptions/${subId}/resourceGroups/${rgname}
 ```
 
 ## Initialize a K8s cluster from the master node
